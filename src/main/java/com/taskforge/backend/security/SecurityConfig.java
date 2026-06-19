@@ -31,37 +31,8 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS))
 
-                .authorizeHttpRequests(auth -> auth
-
-                        // Public APIs
-                        .requestMatchers(
-                                "/",
-                                "/api/auth/**",
-                                "/api/files/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/v3/api-docs/**",
-                                "/ws/**",
-                                "/ws",
-                                "/ws/info",
-
-                                // Temporary public endpoints
-                                "/api/projects/**",
-                                "/api/tasks/**",
-                                "/api/teams/**"
-                        )
-                        .permitAll()
-
-                        // Admin APIs
-                        .requestMatchers("/api/admin/**")
-                        .hasRole("ADMIN")
-
-                        // Manager APIs
-                        .requestMatchers("/api/manager/**")
-                        .hasAnyRole("ADMIN", "MANAGER")
-
-                        .anyRequest()
-                        .authenticated())
+                .authorizeHttpRequests(auth ->
+                        auth.anyRequest().permitAll())
 
                 .addFilterBefore(
                         jwtFilter,
