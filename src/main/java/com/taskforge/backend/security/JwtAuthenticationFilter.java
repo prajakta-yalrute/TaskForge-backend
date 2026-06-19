@@ -23,19 +23,28 @@ public class JwtAuthenticationFilter
     private final CustomUserDetailsService userDetailsService;
 
     // Skip JWT check for these APIs
-    @Override
-    protected boolean shouldNotFilter(
-            HttpServletRequest request) {
+   @Override
+protected boolean shouldNotFilter(
+        HttpServletRequest request) {
 
-        String path = request.getServletPath();
+    String path = request.getServletPath();
 
-        return path.startsWith("/api/auth/")
-                || path.startsWith("/api/files/")
-                || path.startsWith("/swagger-ui/")
-                || path.startsWith("/v3/api-docs")
-                || path.startsWith("/ws");
-    }
+    return path.startsWith("/api/auth/")
+            || path.startsWith("/api/files/")
+            || path.startsWith("/swagger-ui/")
+            || path.startsWith("/v3/api-docs")
+            || path.startsWith("/ws")
 
+            // Add these
+            || path.startsWith("/api/tasks/")
+            || path.equals("/api/tasks")
+
+            || path.startsWith("/api/projects/")
+            || path.equals("/api/projects")
+
+            || path.startsWith("/api/teams/")
+            || path.equals("/api/teams");
+}
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
