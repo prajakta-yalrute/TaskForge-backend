@@ -4,10 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-//import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-//import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @RequiredArgsConstructor
@@ -20,25 +20,53 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-   @Bean
-public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http)
+            throws Exception {
 
-    http
-        .csrf(csrf -> csrf.disable())
-        .cors(cors -> {})
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers(
-                "/",
-                "/api/auth/**",
-                "/swagger-ui/**",
-                "/v3/api-docs/**",
-                "/api/projects/**",
-                "/api/tasks/**",
-                "/api/teams/**"
-            ).permitAll()
-            .anyRequest().authenticated()
-        );
+        http
+                .csrf(csrf -> csrf.disable())
 
-    return http.build();
-}
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS))
+
+                .authorizeHttpRequests(auth -> auth
+
+                        // Public APIs
+                        .requestMatchers(
+                                "/",
+                                "/api/auth/**",
+                                "/api/files/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/ws/**",
+                                "/ws",
+                                "/ws/info",
+
+                                // Temporary public endpoints
+                                "/api/projects/**",
+                                "/api/tasks/**",
+                                "/api/teams/**"
+                        )
+                        .permitAll()
+
+                        // Admin APIs
+                        .requestMatchers("/api/admin/**")
+                        .hasRole("ADMIN")
+
+                        // Manager APIs
+                        .requestMatchers("/api/manager/**")
+                        .hasAnyRole("ADMIN", "MANAGER")
+
+                        .anyRequest()
+                        .authenticated())
+
+                .addFilterBefore(
+                        jwtFilter,
+                        UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
 }
